@@ -20,6 +20,9 @@ func setupFolder(root string, nFiles, nDirectories int) error {
 	// Create subdirectories for files in each directory
 	for i := range nDirectories {
 		dirPath = filepath.Join(dirPath, fmt.Sprintf("subdir_%d", i))
+		if err := os.Mkdir(dirPath, 0700); err != nil {
+			return err
+		}
 		if err := createFilesInDir(dirPath, nFiles); err != nil {
 			return err
 		}

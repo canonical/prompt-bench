@@ -66,6 +66,7 @@ func openAllFiles(root string, parallel bool, measurements map[string][]uint64) 
 					slog.Error(fmt.Sprintf("can't measuring file: %v", err))
 				}
 			}()
+			break
 		}
 		if err := measureFileOpening(p, measurements); err != nil {
 			slog.Error(fmt.Sprintf("can't measuring file: %v", err))

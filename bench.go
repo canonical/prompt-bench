@@ -26,7 +26,10 @@ func runBench(p string, count uint, parallel bool) error {
 		return fmt.Errorf("error while prescanning: %v", err)
 	}
 
-	slog.Info(fmt.Sprintf("Starting measuring %d time. Runs opening in parallel: %v", count, parallel))
+	slog.Info(fmt.Sprintf("Starting measuring %d time(s)", count))
+	if parallel {
+		slog.Info("Runs opening calls are in parallel")
+	}
 	for range count {
 		openAllFiles(p, parallel, measurements)
 	}

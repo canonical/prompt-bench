@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
 	"sync"
@@ -57,7 +58,7 @@ func discoverContent(root string, measurements map[string][]uint64) error {
 // openAllFiles open all the files from the measurements map
 func openAllFiles(parallel bool, measurements map[string][]uint64) {
 	var wg sync.WaitGroup
-	for p := range measurements {
+	for p := range maps.Clone(measurements) {
 		if parallel {
 			wg.Add(1)
 			go func() {
@@ -66,7 +67,7 @@ func openAllFiles(parallel bool, measurements map[string][]uint64) {
 					slog.Error(fmt.Sprintf("can't measuring file: %v", err))
 				}
 			}()
-			break
+			continue
 		}
 		if err := measureFileOpening(p, measurements); err != nil {
 			slog.Error(fmt.Sprintf("can't measuring file: %v", err))
@@ -74,6 +75,8 @@ func openAllFiles(parallel bool, measurements map[string][]uint64) {
 	}
 	wg.Wait()
 }
+
+var mu sync.Mutex
 
 // measureFileOpening measures the time the syscall takes to open a single file.
 func measureFileOpening(p string, measurements map[string][]uint64) error {
@@ -85,7 +88,9 @@ func measureFileOpening(p string, measurements map[string][]uint64) error {
 	}
 	defer f.Close()
 
+	mu.Lock()
 	measurements[p] = append(measurements[p], uint64(elapsed))
+	mu.Unlock()
 
 	return nil
 }

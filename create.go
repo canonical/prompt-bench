@@ -19,7 +19,7 @@ func setupFolder(root string, nFiles, nDirectories int) error {
 
 	// Create subdirectories for files in each directory
 	for i := range nDirectories {
-		dirPath = filepath.Join(dirPath, fmt.Sprintf("subdir_%d", i))
+		dirPath = filepath.Join(dirPath, fmt.Sprintf("subdir_%0*d", len(fmt.Sprintf("%d", nDirectories)), i))
 		if err := os.Mkdir(dirPath, 0700); err != nil {
 			return err
 		}
@@ -34,7 +34,7 @@ func setupFolder(root string, nFiles, nDirectories int) error {
 // createFilesInDir creates `total` empty files in p.
 func createFilesInDir(p string, total int) error {
 	for i := range total {
-		f, err := os.OpenFile(filepath.Join(p, fmt.Sprintf("file_%d", i)), os.O_RDONLY|os.O_CREATE, 0644)
+		f, err := os.OpenFile(filepath.Join(p, fmt.Sprintf("file_%0*d", len(fmt.Sprintf("%d", total)), i)), os.O_RDONLY|os.O_CREATE, 0644)
 		if err != nil {
 			return err
 		}

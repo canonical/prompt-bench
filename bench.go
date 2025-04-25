@@ -13,7 +13,7 @@ import (
 // runBench opens all files within p after collecting them. If p is a file, only that one will be opened.
 // count is the number of runs to proceed.
 // within a run, files can be opened in parallel or not.
-func runBench(p string, count uint, parallel bool) error {
+func runBench(root string, count uint, parallel bool) error {
 	// measurements is a mapping between a file path and the elapsed time to open this file.
 	// We are going to pre-populate this and only measure one syscall per file concurrently, so we can
 	// avoid using a sync.Map for this.
@@ -21,8 +21,8 @@ func runBench(p string, count uint, parallel bool) error {
 
 	// First, ensure we list everything we want to measure. This is outside of the measurement itself as it can trigger
 	// prompting for no rules stored
-	slog.Info(fmt.Sprintf("Prescanning: %s", p))
-	if err := discoverContent(p, measurements); err != nil {
+	slog.Info(fmt.Sprintf("Prescanning: %s", root))
+	if err := discoverContent(root, measurements); err != nil {
 		return fmt.Errorf("error while prescanning: %v", err)
 	}
 

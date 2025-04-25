@@ -31,7 +31,7 @@ func runBench(p string, count uint, parallel bool) error {
 		slog.Info("Runs opening calls are in parallel")
 	}
 	for range count {
-		openAllFiles(p, parallel, measurements)
+		openAllFiles(parallel, measurements)
 	}
 
 	return nil
@@ -55,7 +55,7 @@ func discoverContent(root string, measurements map[string][]uint64) error {
 }
 
 // openAllFiles open all the files from the measurements map
-func openAllFiles(root string, parallel bool, measurements map[string][]uint64) {
+func openAllFiles(parallel bool, measurements map[string][]uint64) {
 	var wg sync.WaitGroup
 	for p := range measurements {
 		if parallel {

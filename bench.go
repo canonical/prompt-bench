@@ -5,8 +5,10 @@ import (
 	"io/fs"
 	"log/slog"
 	"maps"
+	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 	"time"
 )
@@ -34,6 +36,9 @@ func runBench(root string, count uint, parallel bool) error {
 	for range count {
 		openAllFiles(parallel, measurements)
 	}
+
+	slog.Info("Compmute measurement statistics")
+	printMeasurements(measurements, root)
 
 	return nil
 }
@@ -93,4 +98,45 @@ func measureFileOpening(p string, measurements map[string][]uint64) error {
 	mu.Unlock()
 
 	return nil
+}
+
+// printMeasurements prints a CSV file with:
+// filename,deep,average_time,max,min,std_dev
+func printMeasurements(measurements map[string][]uint64, root string) {
+	// Create a slice to store the relative paths and sort them in ASCII order
+	relPaths := make([]string, 0, len(measurements))
+	for p := range measurements {
+		relPaths = append(relPaths, p[len(root):])
+	}
+	sort.Strings(relPaths)
+
+	fmt.Println("filename,deep,average_time,max,min,std_dev")
+
+	for i, relPath := range relPaths {
+		elapsedTimes := measurements[filepath.Join(root, relPath)]
+		if len(elapsedTimes) == 0 {
+			slog.Warn(fmt.Sprintf("no measurements for %s", relPath))
+			continue
+		}
+
+		maxT := elapsedTimes[0]
+		minT := elapsedTimes[0]
+		sum := uint64(0)
+		for _, t := range elapsedTimes {
+			maxT = max(t, maxT)
+			minT = min(t, minT)
+			sum += t
+		}
+		avg := sum / uint64(len(elapsedTimes))
+
+		// Compute standard deviation
+		varianceSum := uint64(0)
+		for _, t := range elapsedTimes {
+			varianceSum += (t - avg) * (t - avg)
+		}
+		variance := varianceSum / uint64(len(elapsedTimes))
+		dev := uint64(math.Sqrt(float64(variance)))
+
+		fmt.Printf("%s,%d,%d,%d,%d,%d\n", relPath, i+1, avg, maxT, minT, dev)
+	}
 }

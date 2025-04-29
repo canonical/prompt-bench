@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -22,10 +23,16 @@ func runBench(root string, count uint, parallel bool) error {
 	// avoid using a sync.Map for this.
 	measurements := make(map[string][]uint64)
 
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return err
+	}
+
 	// First, ensure we list everything we want to measure. This is outside of the measurement itself as it can trigger
 	// prompting for no rules stored
 	slog.Info(fmt.Sprintf("Prescanning: %s", root))
-	if err := discoverContent(root, measurements); err != nil {
+	rootIsDir, err := discoverContent(root, measurements)
+	if err != nil {
 		return fmt.Errorf("error while prescanning: %v", err)
 	}
 
@@ -37,20 +44,27 @@ func runBench(root string, count uint, parallel bool) error {
 		openAllFiles(parallel, measurements)
 	}
 
-	slog.Info("Compmute measurement statistics")
+	slog.Info("Compute measurement statistics")
+	// Relative path for file targetting.
+	if !rootIsDir {
+		root = filepath.Dir(root)
+	}
 	printMeasurements(measurements, root)
 
 	return nil
 }
 
 // discoverContent populate a global map with an index of every files in folder
-func discoverContent(root string, measurements map[string][]uint64) error {
-	return filepath.Walk(root, func(p string, info fs.FileInfo, err error) error {
+func discoverContent(root string, measurements map[string][]uint64) (rootIsDir bool, err error) {
+	err = filepath.Walk(root, func(p string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if info.IsDir() {
+			if p == root {
+				rootIsDir = true
+			}
 			return nil
 		}
 
@@ -58,6 +72,8 @@ func discoverContent(root string, measurements map[string][]uint64) error {
 
 		return nil
 	})
+
+	return rootIsDir, err
 }
 
 // openAllFiles open all the files from the measurements map
@@ -104,9 +120,11 @@ func measureFileOpening(p string, measurements map[string][]uint64) error {
 // filename,deep,average_time,max,min,std_dev
 func printMeasurements(measurements map[string][]uint64, root string) {
 	// Create a slice to store the relative paths and sort them in ASCII order
+	// If targetting a single file, keep the whole file path.
 	relPaths := make([]string, 0, len(measurements))
+	rootToStrip := root + "/"
 	for p := range measurements {
-		relPaths = append(relPaths, p[len(root):])
+		relPaths = append(relPaths, strings.TrimPrefix(p, rootToStrip))
 	}
 	sort.Strings(relPaths)
 

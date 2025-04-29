@@ -1,4 +1,4 @@
-# prompt-bench
+# Benchmark permission prompting technology
 
 Small utility to exercise ubuntu permission prompting and measure performances.
 

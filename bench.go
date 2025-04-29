@@ -70,6 +70,15 @@ func discoverContent(root string, measurements map[string][]uint64) (rootIsDir b
 
 		measurements[p] = nil
 
+		// filepath.Walk() only trigger an open on the directory to list its content.
+		// Ensure in case of "always allow" registration, we also went over each files too
+		// to creat the snap rules.
+		fd, err := syscall.Open(p, syscall.O_RDONLY, 0)
+		if err != nil {
+			return err
+		}
+		defer syscall.Close(fd)
+
 		return nil
 	})
 

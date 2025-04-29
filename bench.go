@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"maps"
 	"math"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -102,12 +102,12 @@ var mu sync.Mutex
 // measureFileOpening measures the time the syscall takes to open a single file.
 func measureFileOpening(p string, measurements map[string][]uint64) error {
 	start := time.Now()
-	f, err := os.Open(p)
+	fd, err := syscall.Open(p, syscall.O_RDONLY, 0)
 	elapsed := time.Since(start).Nanoseconds()
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer syscall.Close(fd)
 
 	mu.Lock()
 	measurements[p] = append(measurements[p], uint64(elapsed))

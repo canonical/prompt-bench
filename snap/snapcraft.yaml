@@ -1,0 +1,24 @@
+name: prompt-bench
+base: core24
+version: "0.1"
+summary: Benchmark permission prompting technology
+description: |
+  This is a small utility to exercise ubuntu permission prompting and
+  measure its performances.
+  You can create a directory with some complexity, try to iteratively
+  open them and check how many rules are currently handed by snapd.
+grade: devel
+confinement: strict
+
+apps:
+  prompt-bench:
+    command: bin/prompt-bench
+    plugs:
+      - home
+
+parts:
+  bench:
+    build-snaps:
+      - go
+    plugin: go
+    source: .

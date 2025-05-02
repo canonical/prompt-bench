@@ -21,8 +21,8 @@ func setupRootCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().UintVar(&count, "count", 1, "Number of times to run the request")
-	cmd.Flags().BoolVar(&parallel, "parallel", false, "Run multiple requests in parallel")
+	cmd.Flags().UintVarP(&count, "count", "c", 1, "Number of times to run the request")
+	cmd.Flags().BoolVarP(&parallel, "parallel", "p", false, "Run multiple requests in parallel")
 
 	return cmd
 }

@@ -1,4 +1,4 @@
-module promptbench
+module github.com/canonical/prompt-bench
 
 go 1.23.0
 

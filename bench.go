@@ -157,11 +157,14 @@ func printMeasurements(measurements map[string][]uint64, root string) {
 		avg := sum / uint64(len(elapsedTimes))
 
 		// Compute standard deviation
-		varianceSum := uint64(0)
-		for _, t := range elapsedTimes {
-			varianceSum += (t - avg) * (t - avg)
+		var variance uint64 = 0
+		if len(elapsedTimes) > 1 {
+			varianceSum := uint64(0)
+			for _, t := range elapsedTimes {
+				varianceSum += (t - avg) * (t - avg)
+			}
+			variance = varianceSum / uint64(len(elapsedTimes)-1)
 		}
-		variance := varianceSum / uint64(len(elapsedTimes))
 		dev := uint64(math.Sqrt(float64(variance)))
 
 		fmt.Printf("%s,%d,%d,%d,%d,%d\n", relPath, i+1, avg, maxT, minT, dev)

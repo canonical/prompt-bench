@@ -78,10 +78,12 @@ func nextSnapsBenchIteration(snapToInstallDir string) iter.Seq2[uint64, error] {
 
 // measureEnablement measures the time it takes to enable prompting.
 func measureEnablement() (m uint64, err error) {
+	slog.Info("Enabling experimental.apparmor-prompting setting")
 	cmd := exec.Command("snap", "set", "system", "experimental.apparmor-prompting=true")
 	start := time.Now()
 	out, err := cmd.CombinedOutput()
 	elapsed := time.Since(start).Nanoseconds()
+	slog.Info(fmt.Sprintf("DONE enabling experimental.apparmor-prompting setting in %v", elapsed))
 	if err != nil {
 		return 0, fmt.Errorf("failed to enable experimental.apparmor-prompting setting: %v\n%v", err, string(out))
 	}

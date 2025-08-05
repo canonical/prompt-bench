@@ -52,6 +52,23 @@ func setupSetupCmd() *cobra.Command {
 	return cmd
 }
 
+func setupEnablementCmd() *cobra.Command {
+	var count uint
+
+	cmd := &cobra.Command{
+		Use:   "enablement SNAP_TO_INSTALL_DIR",
+		Short: "Benchmark the enablement time of permission prompting",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runEnablementBench(args[0], count)
+		},
+	}
+
+	cmd.Flags().UintVarP(&count, "count", "c", 1, "Number of times to run the request")
+
+	return cmd
+}
+
 func setupRulesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rules",
@@ -67,6 +84,7 @@ func setupRulesCmd() *cobra.Command {
 
 func main() {
 	rootCmd := setupRootCmd()
+	rootCmd.AddCommand(setupEnablementCmd())
 	rootCmd.AddCommand(setupSetupCmd())
 	rootCmd.AddCommand(setupRulesCmd())
 

@@ -64,7 +64,6 @@ func nextSnapsBenchIteration(snapToInstallDir string) iter.Seq2[uint64, error] {
 			return
 		}
 		currentInstallSnaps := uint64(len(strings.Split(string(out), "\n")) - 2) // -2 to remove the header and the last empty line
-		fmt.Println(currentInstallSnaps)
 
 		for currentInstallSnaps <= measureForSnaps[len(measureForSnaps)-1] {
 			if slices.Contains(measureForSnaps, currentInstallSnaps) {

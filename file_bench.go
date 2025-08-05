@@ -13,10 +13,10 @@ import (
 	"time"
 )
 
-// runBench opens all files within p after collecting them. If p is a file, only that one will be opened.
+// runFileBench opens all files within p after collecting them. If p is a file, only that one will be opened.
 // count is the number of runs to proceed.
 // within a run, files can be opened in parallel or not.
-func runBench(root string, count uint, parallel bool) error {
+func runFileBench(root string, count uint, parallel bool) error {
 	// measurements is a mapping between a file path and the elapsed time to open this file.
 	// We are going to pre-populate this and only measure one syscall per file concurrently, so we can
 	// avoid using a sync.Map for this.

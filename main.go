@@ -17,7 +17,7 @@ func setupRootCmd() *cobra.Command {
 		Short: "Permission prompting benchmarker",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runBench(args[0], count, parallel)
+			return runFileBench(args[0], count, parallel)
 		},
 	}
 

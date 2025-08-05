@@ -71,7 +71,7 @@ func nextSnapsBenchIteration(snapToInstallDir string) iter.Seq2[uint64, error] {
 					return
 				}
 			}
-			out, err := exec.Command("snap", "install", filepath.Join(snapToInstallDir, fmt.Sprintf(snapPatternToInstall, currentInstallSnaps))).CombinedOutput()
+			out, err := exec.Command("snap", "install", "--dangerous", filepath.Join(snapToInstallDir, fmt.Sprintf(snapPatternToInstall, currentInstallSnaps))).CombinedOutput()
 			if err != nil {
 				yield(0, fmt.Errorf("snap install returned: %v\n%v", err, string(out)))
 				return

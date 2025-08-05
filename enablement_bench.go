@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"iter"
 	"log/slog"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
@@ -24,7 +23,7 @@ func runEnablementBench(snapToInstallDir string, count uint) error {
 	measurements := make(map[uint64][]uint64)
 
 	if err := disablePermissionPrompting(); err != nil {
-		return fmt.Errorf("failed to disable permission prompting: %v", err)
+		return fmt.Errorf("failed to initially disable permission prompting: %v", err)
 	}
 
 	for nSnaps, err := range nextSnapsBenchIteration(snapToInstallDir) {
@@ -91,6 +90,9 @@ func measureEnablement() (m uint64, err error) {
 		return 0, fmt.Errorf("failed to enable experimental.apparmor-prompting setting: %v\n%v", err, string(out))
 	}
 
+	// Seems snapd needs some time to process the setting change, so we wait a bit before measuring
+	time.Sleep(5 * time.Second)
+
 	// Cleanup
 	defer func() {
 		if err != nil {
@@ -98,21 +100,23 @@ func measureEnablement() (m uint64, err error) {
 		}
 
 		// Reset the setting to false after measuring
-		var out []byte
-		out, err = exec.Command("snap", "set", "system", "experimental.apparmor-prompting=false").CombinedOutput()
-		if err != nil {
-			err = fmt.Errorf("failed to reset experimental.apparmor-prompting setting: %v\n%v", err, string(out))
-		}
+		err = disablePermissionPrompting()
 	}()
 
 	return uint64(elapsed), nil
 }
 
 func disablePermissionPrompting() error {
-	cmd := exec.Command("snap", "set", "system", "experimental.apparmor-prompting=false")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	defer func() {
+		// Seems snapd needs some time to process the setting change, so we wait a bit before measuring
+		time.Sleep(5 * time.Second)
+	}()
+	out, err := exec.Command("snap", "set", "system", "experimental.apparmor-prompting=false").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to reset experimental.apparmor-prompting setting: %v\n%v", err, string(out))
+	}
+
+	return nil
 }
 
 // printEnablementMeasurements prints a CSV file with:

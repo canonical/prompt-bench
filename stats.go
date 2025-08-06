@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"math"
+	"slices"
 )
 
 // timeStats returns the average, max, min, and standard deviation of the given times.
@@ -25,15 +26,12 @@ retry:
 
 		// Ignore any values that are more than 50% away from the average. Suspicious under combined action
 		// from snapd still pending, causing this value in general to be really low.
-		filteredTimes := make([]uint64, 0, len(times))
-		for _, t := range times {
+		for i, t := range times {
 			if t < avg/2 || t > avg*3/2 {
 				slog.Info("ignoring suspicious time value", slog.Uint64("time", t), slog.Uint64("avg", avg))
-				continue
+				times = slices.Delete(times, i, i+1)
+				continue retry
 			}
-			filteredTimes = append(filteredTimes, t)
-			times = filteredTimes
-			continue retry
 		}
 
 		// Compute standard deviation

@@ -31,11 +31,6 @@ func runEnablementBench(snapToInstallDir string, count uint) error {
 			return fmt.Errorf("failed while setting up snaps for next iteration: %v", err)
 		}
 
-		// throwaway first measurement as it is not a real measurement
-		if _, err := measureEnablement(); err != nil {
-			return fmt.Errorf("failed to measure enablement for %d snaps: %v", nSnaps, err)
-		}
-
 		for i := range count {
 			slog.Info(fmt.Sprintf("Measuring enablement for %d snaps, iteration %d/%d", nSnaps, i+1, count))
 			time, err := measureEnablement()

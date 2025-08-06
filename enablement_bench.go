@@ -88,9 +88,6 @@ func measureEnablement() (m uint64, err error) {
 		return 0, fmt.Errorf("failed to enable experimental.apparmor-prompting setting: %v\n%v", err, string(out))
 	}
 
-	// Seems snapd needs some time to process the setting change, so we wait a bit before measuring
-	time.Sleep(5 * time.Second)
-
 	// Cleanup
 	defer func() {
 		if err != nil {
@@ -105,10 +102,6 @@ func measureEnablement() (m uint64, err error) {
 }
 
 func disablePermissionPrompting() error {
-	defer func() {
-		// Seems snapd needs some time to process the setting change, so we wait a bit before measuring
-		time.Sleep(5 * time.Second)
-	}()
 	out, err := exec.Command("snap", "set", "system", "experimental.apparmor-prompting=false").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to reset experimental.apparmor-prompting setting: %v\n%v", err, string(out))
